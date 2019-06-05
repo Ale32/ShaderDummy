@@ -7,6 +7,36 @@
 #include <sstream>
 
 
+// __debugbreak is platfrom specific here
+#define ASSERT(x) if (!(x)) __debugbreak();
+
+// Legacy OpenGL error handling
+// This macro is for getting a proper error from OpenGL in an old style way
+// #x gives you the string of the function called
+#ifdef _DEBUG
+    #define GLCall(x) GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#else
+    #define GLCall(x) x
+#endif
+
+
+static void GLClearError()
+{
+    while (glGetError() != GL_NO_ERROR);
+}
+
+
+static bool GLLogCall(const char* function, const char* file, int line)
+{
+    while (GLenum error = glGetError())
+    {
+        std::cout << "[OpenGL Error] (" << error << ") " << function <<
+            " " << file << ":" << line << std::endl;
+        return false;
+    }
+    return true;
+}
+
 struct ShaderProgramSource
 {
     std::string VertexSource;
@@ -136,6 +166,7 @@ int main(void)
     unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    // TODO: Shouldn't this be 8 * sizeof(float) ???
     glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
@@ -158,7 +189,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw call - passing nullptr because we are already selecting the index buffer
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
