@@ -129,11 +129,17 @@ int main(void)
 {
     GLFWwindow* window;
 
-    /* Initialize the library */
+    // Initialize the library
     if (!glfwInit())
         return -1;
 
-    /* Create a windowed mode window and its OpenGL context */
+    // Setting OpenGL version to 3.3 and set the OpenGL profile to CORE
+    // This is to set manually the Vertex Array Object (VAO)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Create a windowed mode window and its OpenGL context
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window)
     {
@@ -141,7 +147,7 @@ int main(void)
         return -1;
     }
 
-    /* Make the window's context current */
+    // Make the window's context current
     glfwMakeContextCurrent(window);
 
     // Limit the framerate
@@ -153,7 +159,7 @@ int main(void)
     // Printing the OpenGL version
     std::cout << "Using OpenGL version " << glGetString(GL_VERSION) << std::endl;
 
-    // Creating a buffer
+    // Vertex positions
     float positions[] = {
         -0.5f, -0.5f,
          0.5f, -0.5f,
@@ -161,20 +167,28 @@ int main(void)
         -0.5f,  0.5f,
     };
 
+    // Vertex indices
     unsigned int indices[] = {
         0, 1, 2,
         2, 3, 0
     };
 
+    // Create and bind the vertex array object
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    // Create and bind the vertex buffer
     unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    // TODO: Shouldn't this be 8 * sizeof(float) ???
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 
+    // Enable and set the layout of the vertex buffer
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
+    // Create and bind the index buffer
     unsigned int ibo;
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
@@ -190,16 +204,30 @@ int main(void)
     ASSERT(uLocation != -1);
     glUniform4f(uLocation, 0.8f, 0.3f, 0.8f, 1.0f);
 
+    // Clearing GL states (i.e. unbinding everything)
+    glUseProgram(0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
     float r = 0.0f;
     float increment = 0.05f;
 
-    /* Loop until the user closes the window */
+    // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Bind all every frame
+        //     1 - shader
+        //     2 - vertex array object (that contains vertex buffer and vertex layout)
+        //     3 - index buffer
+        glUseProgram(shader);
         glUniform4f(uLocation, r, 0.3f, 0.8f, 1.0f);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        
         // Draw call - passing nullptr because we are already selecting the index buffer
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
@@ -210,10 +238,10 @@ int main(void)
 
         r += increment;
 
-        /* Swap front and back buffers */
+        // Swap front and back buffers
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
+        // Poll for and process events
         glfwPollEvents();
     }
 
