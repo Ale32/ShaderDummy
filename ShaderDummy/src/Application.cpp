@@ -9,6 +9,7 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 
 struct ShaderProgramSource
@@ -124,7 +125,7 @@ int main(void)
     // Make the window's context current
     glfwMakeContextCurrent(window);
 
-    // Limit the framerate
+    // Limit the framerate - to have a smooth reasonable animation
     glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK)
@@ -149,17 +150,15 @@ int main(void)
             2, 3, 0
         };
 
-        // Create and bind the vertex array object
-        unsigned int vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        // Create the vertex array object
+        VertexArray va;
 
-        // Create and bind the vertex buffer
+        // Create the vertex buffer
         VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
-        // Enable and set the layout of the vertex buffer
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+        VertexBufferLayout layout;
+        layout.Push<float>(2);
+        va.AddBuffer(vb, layout);
 
         // Create and bind the index buffer
         IndexBuffer ib(indices, 6);
@@ -175,8 +174,8 @@ int main(void)
         glUniform4f(uLocation, 0.8f, 0.3f, 0.8f, 1.0f);
 
         // Clearing GL states (i.e. unbinding everything)
+        // TODO: Is this really necessary?
         glUseProgram(0);
-        glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -195,7 +194,7 @@ int main(void)
             glUseProgram(shader);
             glUniform4f(uLocation, r, 0.3f, 0.8f, 1.0f);
 
-            glBindVertexArray(vao);
+            va.Bind();
             ib.Bind();
 
             // Draw call - passing nullptr because we are already selecting the index buffer
