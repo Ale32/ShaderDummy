@@ -7,8 +7,8 @@
 struct VertexBufferElement
 {
     unsigned int type;
-    unsigned int count;
-    unsigned char normalized;
+    unsigned int count; // Must be 1,2,3 or 4 - it is the count of elements this attribute is made of
+    unsigned char normalized; // Make sense for BYTE type, because the GPU needs a float
 
     static unsigned int GetSizeOfType(unsigned int type)
     {
@@ -28,7 +28,7 @@ class VertexBufferLayout
 {
 private:
     std::vector<VertexBufferElement> m_Elements;
-    unsigned int m_Stride;
+    unsigned int m_Stride;  // The amount of bytes between each vertex
 
 public:
     VertexBufferLayout()
