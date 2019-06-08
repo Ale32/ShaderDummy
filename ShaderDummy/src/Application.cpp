@@ -11,6 +11,9 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 
 int main(void)
 {
@@ -79,6 +82,8 @@ int main(void)
         // Create and bind the index buffer
         IndexBuffer ib(indices, 6);
 
+        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+
         // Creating shader
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
@@ -88,6 +93,7 @@ int main(void)
         Texture texture("res/textures/SampleImage.png");
         texture.Bind();
         shader.SetUniform1i("u_texture", 0);
+        shader.SetUniformMat4f("u_MVP", proj);
 
         // Clearing GL states (i.e. unbinding everything)
         // TODO: Is this really necessary?
