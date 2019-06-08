@@ -9,6 +9,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
 
 
 int main(void)
@@ -47,12 +48,12 @@ int main(void)
 
     // Creating a scope to delete the vb and ib automatically without creating any pointer to them
     {
-        // Vertex positions
-        float positions[] = {
-            -0.5f, -0.5f,
-             0.5f, -0.5f,
-             0.5f,  0.5f,
-            -0.5f,  0.5f,
+        // Vertex data
+        float vertexData[] = {
+            -0.5f, -0.5f, 0.0f, 0.0f, // first two are position, next two are uv
+             0.5f, -0.5f, 1.0f, 0.0f,
+             0.5f,  0.5f, 1.0f, 1.0f,
+            -0.5f,  0.5f, 0.0f, 1.0f,
         };
 
         // Vertex indices
@@ -61,13 +62,17 @@ int main(void)
             2, 3, 0
         };
 
+        GLCall(glEnable(GL_BLEND));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
         // Create the vertex array object
         VertexArray va;
 
         // Create the vertex buffer
-        VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+        VertexBuffer vb(vertexData, 4 * 4 * sizeof(float));
 
         VertexBufferLayout layout;
+        layout.Push<float>(2);
         layout.Push<float>(2);
         va.AddBuffer(vb, layout);
 
@@ -78,6 +83,11 @@ int main(void)
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
         shader.SetUniform4f("u_color", 0.8f, 0.3f, 0.8f, 1.0f);
+
+        // Create a texture
+        Texture texture("res/textures/SampleImage.png");
+        texture.Bind();
+        shader.SetUniform1i("u_texture", 0);
 
         // Clearing GL states (i.e. unbinding everything)
         // TODO: Is this really necessary?
