@@ -1,3 +1,5 @@
+// GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan graphics context creation, etc.
+// GL3W is a helper library to access OpenGL functions since there is no standard header to access modern OpenGL functions easily. Alternatives are GLEW, Glad, etc.
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -13,6 +15,9 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 
 int main(void)
@@ -30,7 +35,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "Shader Dummy", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -40,7 +45,7 @@ int main(void)
     // Make the window's context current
     glfwMakeContextCurrent(window);
 
-    // Limit the framerate - to have a smooth reasonable animation
+    // Enable vsync - to have a smooth reasonable animation
     glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK)
@@ -53,10 +58,10 @@ int main(void)
     {
         // Vertex data
         float vertexData[] = {
-            -0.5f, -0.5f, 0.0f, 0.0f, // first two are position, next two are uv
-             0.5f, -0.5f, 1.0f, 0.0f,
-             0.5f,  0.5f, 1.0f, 1.0f,
-            -0.5f,  0.5f, 0.0f, 1.0f,
+            100.0f, 100.0f, 0.0f, 0.0f, // first two are position, next two are uv
+            200.0f, 100.0f, 1.0f, 0.0f,
+            200.0f, 200.0f, 1.0f, 1.0f,
+            100.0f, 200.0f, 0.0f, 1.0f,
         };
 
         // Vertex indices
@@ -82,7 +87,9 @@ int main(void)
         // Create and bind the index buffer
         IndexBuffer ib(indices, 6);
 
-        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+        // MVP matrices
+        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
 
         // Creating shader
         Shader shader("res/shaders/Basic.shader");
@@ -93,7 +100,6 @@ int main(void)
         Texture texture("res/textures/SampleImage.png");
         texture.Bind();
         shader.SetUniform1i("u_texture", 0);
-        shader.SetUniformMat4f("u_MVP", proj);
 
         // Clearing GL states (i.e. unbinding everything)
         // TODO: Is this really necessary?
@@ -104,6 +110,13 @@ int main(void)
 
         Renderer renderer;
 
+        // ImGui init - Example in vendor/imgui/main.cpp
+        ImGui::CreateContext();
+        ImGui_ImplGlfwGL3_Init(window, true);
+        ImGui::StyleColorsDark();
+
+        glm::vec3 translation(200, 200, 0);
+
         float r = 0.0f;
         float increment = 0.05f;
 
@@ -111,9 +124,14 @@ int main(void)
         while (!glfwWindowShouldClose(window))
         {
             renderer.Clear();
+            ImGui_ImplGlfwGL3_NewFrame();
+
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
+            glm::mat4 mvp = proj * view * model;
 
             shader.Bind();
             shader.SetUniform4f("u_color", r, 0.3f, 0.8f, 1.0f);
+            shader.SetUniformMat4f("u_MVP", mvp);
 
             renderer.Draw(va, ib, shader);
 
@@ -124,6 +142,15 @@ int main(void)
 
             r += increment;
 
+            // ImGui stuff
+            {
+                ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            }
+
+            ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
             // Swap front and back buffers
             glfwSwapBuffers(window);
 
@@ -131,6 +158,10 @@ int main(void)
             glfwPollEvents();
         }
     }
+
+    // ImGui cleanup
+    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;
