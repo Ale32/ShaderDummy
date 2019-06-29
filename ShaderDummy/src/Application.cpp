@@ -1,5 +1,6 @@
-// GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan graphics context creation, etc.
-// GL3W is a helper library to access OpenGL functions since there is no standard header to access modern OpenGL functions easily. Alternatives are GLEW, Glad, etc.
+// GLFW is a cross-platform library for handling windows, inputs, OpenGL/Vulkan graphics context creation, etc.
+// GL3W is a helper library to access OpenGL functions since there is no standard header to access modern OpenGL functions easily.
+// Alternatives are GLEW, Glad, etc.
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -23,10 +24,21 @@
 #include "tests/TestTexture2D.h"
 
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+
+void processInputs(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+
 int main(void)
 {
-    GLFWwindow* window;
-
     // Initialize the library
     if (!glfwInit())
         return -1;
@@ -38,7 +50,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(960, 540, "Shader Dummy", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(960, 540, "Shader Dummy", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -47,6 +59,10 @@ int main(void)
 
     // Make the window's context current
     glfwMakeContextCurrent(window);
+
+    // Setting up the gl viewport
+    glViewport(0, 0, 960, 540);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Enable vsync - to have a smooth reasonable animation
     glfwSwapInterval(1);
@@ -130,6 +146,8 @@ int main(void)
         // Loop until the user closes the window
         while (!glfwWindowShouldClose(window))
         {
+            processInputs(window);
+
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
