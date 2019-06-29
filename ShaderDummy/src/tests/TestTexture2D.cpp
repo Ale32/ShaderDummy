@@ -90,9 +90,14 @@ namespace test {
 
     void TestTexture2D::OnImGuiRender()
     {
-        ImGui::SliderFloat3("Translation A", &m_TranslationA.x, 0.0f, 960.0f);
-        ImGui::SliderFloat3("Translation B", &m_TranslationB.x, 0.0f, 960.0f);
-        ImGui::Text("FPS: %.1f - %.3f ms/frame", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+        //ImGui::SliderFloat3("Translation A", &m_TranslationA.x, 0.0f, 960.0f);
+        //ImGui::SliderFloat3("Translation B", &m_TranslationB.x, 0.0f, 960.0f);
+
+        ImGui::SliderFloat("MoveA.X", &m_TranslationA.x, 0.0f, 960.0f);
+        ImGui::SliderFloat("MoveA.Y", &m_TranslationA.y, 0.0f, 540.0f);
+
+        ImGui::SliderFloat("MoveB.X", &m_TranslationB.x, 0.0f, 960.0f);
+        ImGui::SliderFloat("MoveB.Y", &m_TranslationB.y, 0.0f, 540.0f);
     }
 
 }

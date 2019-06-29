@@ -76,6 +76,7 @@ int main(void)
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
+        /*
         // Create the vertex array object
         VertexArray va;
 
@@ -110,6 +111,7 @@ int main(void)
         vb.Unbind();
         ib.Unbind();
         shader.Unbind();
+        */
 
         Renderer renderer;
 
@@ -136,6 +138,7 @@ int main(void)
             {
                 currentTest->OnUpdate(0.0f);
                 currentTest->OnRender();
+
                 ImGui::Begin("Test");
                 if (currentTest != testMenu && ImGui::Button("<-"))
                 {
@@ -145,11 +148,9 @@ int main(void)
                 currentTest->OnImGuiRender();
                 ImGui::End();
             }
-
+            
             // ImGui stuff
             {
-                //ImGui::SliderFloat3("Translation A", &translationA.x, 0.0f, 960.0f);
-                //ImGui::SliderFloat3("Translation B", &translationB.x, 0.0f, 960.0f);
                 ImGui::Text("FPS: %.1f - %.3f ms/frame", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
             }
 
