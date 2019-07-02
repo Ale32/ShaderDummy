@@ -65,7 +65,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\Basic.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -462,6 +461,8 @@
     <None Include="src\vendor\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="res\shaders\Basic.vertex" />
+    <None Include="res\shaders\Basic.fragment" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">

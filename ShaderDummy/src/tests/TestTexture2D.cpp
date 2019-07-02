@@ -46,7 +46,7 @@ namespace test {
         m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 6);
 
         // Creating shader
-        m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
+        m_Shader = std::make_unique<Shader>("res/shaders/Basic.vertex", "res/shaders/Basic.fragment");
         m_Shader->Bind();
         m_Shader->SetUniform4f("u_color", 0.8f, 0.3f, 0.8f, 1.0f);
 
