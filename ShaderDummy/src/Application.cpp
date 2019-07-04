@@ -13,6 +13,7 @@
 #include "VertexArray.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Camera.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -22,6 +23,24 @@
 
 #include "tests/TestClearColor.h"
 #include "tests/TestTexture2D.h"
+#include "tests/TestCube.h"
+
+
+// Settings
+const unsigned int SCREEN_WIDTH = 960;
+const unsigned int SCREEN_HEIGHT = 540;
+
+
+// Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = SCREEN_WIDTH / 2.0f;
+float lastY = SCREEN_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+
+// Timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -29,11 +48,45 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-
-void processInputs(GLFWwindow* window)
+void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(yoffset);
 }
 
 
@@ -50,7 +103,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a windowed mode window and its OpenGL context
-    GLFWwindow* window = glfwCreateWindow(960, 540, "Shader Dummy", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Shader Dummy", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -61,8 +114,13 @@ int main(void)
     glfwMakeContextCurrent(window);
 
     // Setting up the gl viewport
-    glViewport(0, 0, 960, 540);
+    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Setting up glfw callbacks
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     // Enable vsync - to have a smooth reasonable animation
     glfwSwapInterval(1);
@@ -75,59 +133,10 @@ int main(void)
 
     // Creating a scope to delete the vb and ib automatically without creating any pointer to them
     {
-        // Vertex data
-        float vertexData[] = {
-            -50.0f, -50.0f, 0.0f, 0.0f, // first two are position, next two are uv
-             50.0f, -50.0f, 1.0f, 0.0f,
-             50.0f,  50.0f, 1.0f, 1.0f,
-            -50.0f,  50.0f, 0.0f, 1.0f,
-        };
-
-        // Vertex indices
-        unsigned int indices[] = {
-            0, 1, 2,
-            2, 3, 0
-        };
-
         GLCall(glEnable(GL_BLEND));
+        GLCall(glEnable(GL_DEPTH_TEST));
+
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-        /*
-        // Create the vertex array object
-        VertexArray va;
-
-        // Create the vertex buffer
-        VertexBuffer vb(vertexData, 4 * 4 * sizeof(float));
-
-        VertexBufferLayout layout;
-        layout.Push<float>(2);
-        layout.Push<float>(2);
-        va.AddBuffer(vb, layout);
-
-        // Create and bind the index buffer
-        IndexBuffer ib(indices, 6);
-
-        // MVP matrices
-        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-
-        // Creating shader
-        Shader shader("res/shaders/Basic.shader");
-        shader.Bind();
-        shader.SetUniform4f("u_color", 0.8f, 0.3f, 0.8f, 1.0f);
-
-        // Create a texture
-        Texture texture("res/textures/SampleImage.png");
-        texture.Bind();
-        shader.SetUniform1i("u_texture", 0);
-
-        // Clearing GL states (i.e. unbinding everything)
-        // TODO: Is this really necessary?
-        va.Unbind();
-        vb.Unbind();
-        ib.Unbind();
-        shader.Unbind();
-        */
 
         Renderer renderer;
 
@@ -137,6 +146,7 @@ int main(void)
 
         testMenu->RegisterTest<test::TestClearColor>("Clear Color");
         testMenu->RegisterTest<test::TestTexture2D>("Texture");
+        testMenu->RegisterTest<test::TestCube>("3D Cube");
 
         // ImGui init - Example in vendor/imgui/main.cpp
         ImGui::CreateContext();
@@ -146,16 +156,25 @@ int main(void)
         // Loop until the user closes the window
         while (!glfwWindowShouldClose(window))
         {
-            processInputs(window);
+            // Per frame time logic
+            float currentFrame = glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+
+            processInput(window);
 
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
 
+            // Calculate matrices because of the camera
+            glm::mat4 view = camera.GetViewMatrix();
+            glm::mat4 projection = glm::perspective(glm::radians(camera.m_Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+
             if (currentTest)
             {
-                currentTest->OnUpdate(0.0f);
-                currentTest->OnRender();
+                currentTest->OnUpdate(deltaTime);
+                currentTest->OnRender(view, projection);
 
                 ImGui::Begin("Test");
                 if (currentTest != testMenu && ImGui::Button("<-"))

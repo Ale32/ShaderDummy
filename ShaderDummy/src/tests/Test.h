@@ -1,7 +1,10 @@
 #pragma once
 
+#include "glm/glm.hpp"
+
 #include <vector>
 #include <functional>
+
 
 namespace test {
 
@@ -12,8 +15,13 @@ namespace test {
         virtual ~Test() {}
 
         virtual void OnUpdate(float deltaTime) {}
-        virtual void OnRender() {}
         virtual void OnImGuiRender() {}
+        virtual void OnRender() {}
+        virtual void OnRender(const glm::mat4& view, const glm::mat4& projection)
+        {
+            // If a child class will not implement this, by default the standard one will be called
+            this->OnRender();
+        }
     };
 
     class TestMenu : public Test
