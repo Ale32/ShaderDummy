@@ -19,4 +19,7 @@ public:
 
     void Bind() const;
     void Unbind() const;
+
+    // TODO: Fix this
+    inline int GetCount() const { return 36; }
 };
