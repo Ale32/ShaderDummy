@@ -29,10 +29,13 @@ class VertexBufferLayout
 private:
     std::vector<VertexBufferElement> m_Elements;
     unsigned int m_Stride;  // The amount of bytes between each vertex
+    unsigned int m_VertexAttributesCount;
 
 public:
     VertexBufferLayout()
-        : m_Stride(0) {}
+        : m_Stride(0), m_VertexAttributesCount(0)
+    {
+    }
 
     template<typename T>
     void Push(unsigned int count)
@@ -45,6 +48,7 @@ public:
     {
         m_Elements.push_back({ GL_FLOAT, count, GL_FALSE });
         m_Stride += count * VertexBufferElement::GetSizeOfType(GL_FLOAT);
+        m_VertexAttributesCount += count;
     }
 
     template<>
@@ -52,6 +56,7 @@ public:
     {
         m_Elements.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
         m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
+        m_VertexAttributesCount += count;
     }
 
     template<>
@@ -59,8 +64,10 @@ public:
     {
         m_Elements.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
         m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
+        m_VertexAttributesCount += count;
     }
 
     inline const std::vector<VertexBufferElement> GetElements() const { return m_Elements; }
     inline unsigned int GetStride() const { return m_Stride; }
+    inline unsigned int GetVertexAttributesCount() const { return m_VertexAttributesCount; }
 };

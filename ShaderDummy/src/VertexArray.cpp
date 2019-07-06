@@ -21,6 +21,8 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
     const auto& elements = layout.GetElements();
     unsigned int offset = 0;
 
+    m_vertexCount = vb.GetSize() / layout.GetVertexAttributesCount();
+
     for (unsigned int i = 0; i < elements.size(); i++)
     {
         const auto& element = elements[i];

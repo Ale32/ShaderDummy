@@ -10,6 +10,7 @@ class VertexArray
 {
 private:
     unsigned int m_RendererID;
+    unsigned int m_vertexCount;
 
 public:
     VertexArray();
@@ -20,6 +21,5 @@ public:
     void Bind() const;
     void Unbind() const;
 
-    // TODO: Fix this
-    inline int GetCount() const { return 36; }
+    inline unsigned int GetVertexCount() const { return m_vertexCount; }
 };
