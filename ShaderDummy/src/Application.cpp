@@ -24,6 +24,7 @@
 #include "tests/TestClearColor.h"
 #include "tests/TestTexture2D.h"
 #include "tests/TestCube.h"
+#include "tests/TestBasicLighting.h"
 
 
 // Settings
@@ -33,6 +34,15 @@ const unsigned int SCREEN_HEIGHT = 540;
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+// TODO: Debug this constructor not properly working
+/*Camera camera(
+    glm::vec3(0.0f, 0.0f, 3.0f),  // Origin
+    glm::vec3(0.0f, 0.0f, 0.0f),  // Center of interest
+    glm::vec3(0.0f, 1.0f, 0.0f),  // World up
+    45.0f // Horizontal FOV
+);*/
+
 float lastX = SCREEN_WIDTH / 2.0f;
 float lastY = SCREEN_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -118,9 +128,9 @@ int main(void)
 
     // Setting up glfw callbacks
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    //glfwSetCursorPosCallback(window, mouse_callback);
+    //glfwSetScrollCallback(window, scroll_callback);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     // Enable vsync - to have a smooth reasonable animation
     glfwSwapInterval(1);
@@ -147,6 +157,7 @@ int main(void)
         testMenu->RegisterTest<test::TestClearColor>("Clear Color");
         testMenu->RegisterTest<test::TestTexture2D>("Texture");
         testMenu->RegisterTest<test::TestCube>("3D Cube");
+        testMenu->RegisterTest<test::TestBasicLighting>("Basic Lighting");
 
         // ImGui init - Example in vendor/imgui/main.cpp
         ImGui::CreateContext();
@@ -169,7 +180,7 @@ int main(void)
 
             // Calculate matrices because of the camera
             glm::mat4 view = camera.GetViewMatrix();
-            glm::mat4 projection = glm::perspective(glm::radians(camera.m_Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+            glm::mat4 projection = glm::perspective(glm::radians(camera.m_hFov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
             if (currentTest)
             {
